@@ -67,10 +67,18 @@ function install() {
             echo -e -n "${CYAN}(!)${NC} Enter your email address (Let's Encrypt will send you certificate expiration reminders): "
             read EMAIL
             echo ""
+
+            echo -e -n "${CYAN}(!)${NC} Enter the HTTP port you want to use for Let's Encrypt (ex. 80): "
+            read $LETS_ENCRYPT_HTTP
+            echo ""
+            
+            echo -e -n "${CYAN}(!)${NC} Enter the HTTPS port you want to use for Let's Encrypt (ex. 443): "
+            read $LETS_ENCRYPT_HTTPS
+            echo ""
     
             mkdir -p $OUTPUT_DIR/letsencrypt
             docker pull certbot/certbot
-            docker run -it --rm --name certbot -p 80:80 -v $OUTPUT_DIR/letsencrypt:/etc/letsencrypt/ certbot/certbot \
+            docker run -it --rm --name certbot -p $LETS_ENCRYPT_HTTP:80 -v $OUTPUT_DIR/letsencrypt:/etc/letsencrypt/ certbot/certbot \
                 certonly --standalone --noninteractive  --agree-tos --preferred-challenges http \
                 --email $EMAIL -d $DOMAIN --logs-dir /etc/letsencrypt/logs
         fi
@@ -154,7 +162,7 @@ function forceUpdateLetsEncrypt() {
     if [ -d "${OUTPUT_DIR}/letsencrypt/live" ]
     then
         docker pull certbot/certbot
-        docker run -i --rm --name certbot -p 443:443 -p 80:80 \
+        docker run -i --rm --name certbot -p $LETS_ENCRYPT_HTTPS:443 -p $LETS_ENCRYPT_HTTP:80 \
             -v $OUTPUT_DIR/letsencrypt:/etc/letsencrypt/ certbot/certbot \
             renew --logs-dir /etc/letsencrypt/logs --force-renew
     fi
